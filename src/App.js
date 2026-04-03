@@ -1,24 +1,78 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+
+import ProtectedRoute from './routes/ProtectedRoute';
+import Layout from './components/layout/Layout';
+
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Analytics from './pages/Analytics';
+import NewsList from './pages/News/NewsList';
+import NewsCreate from './pages/News/NewsCreate';
+import NewsEdit from './pages/News/NewsEdit';
+import Categories from './pages/Categories';
+import Hashtags from './pages/Hashtags';
+import Comments from './pages/Comments';
+import Users from './pages/Users';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Public */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/news" element={<NewsList />} />
+            <Route path="/news/create" element={<NewsCreate />} />
+            <Route path="/news/:id/edit" element={<NewsEdit />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/hashtags" element={<Hashtags />} />
+            <Route path="/comments" element={<Comments />} />
+            <Route path="/users" element={<Users />} />
+          </Route>
+        </Route>
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+
+      <Toaster
+        position="top-right"
+        gutter={8}
+        toastOptions={{
+          duration: 3500,
+          style: {
+            fontSize: '13px',
+            fontWeight: '500',
+            borderRadius: '10px',
+            padding: '12px 16px',
+          },
+          success: {
+            style: {
+              background: '#f0fdf4',
+              color: '#166534',
+              border: '1px solid #bbf7d0',
+            },
+            iconTheme: { primary: '#16a34a', secondary: '#f0fdf4' },
+          },
+          error: {
+            style: {
+              background: '#fff1f2',
+              color: '#991b1b',
+              border: '1px solid #fecdd3',
+            },
+            iconTheme: { primary: '#dc2626', secondary: '#fff1f2' },
+          },
+        }}
+      />
+    </BrowserRouter>
   );
 }
 
