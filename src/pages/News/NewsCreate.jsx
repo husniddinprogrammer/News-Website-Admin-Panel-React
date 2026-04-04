@@ -13,15 +13,13 @@ const NewsCreate = () => {
   const navigate = useNavigate();
   const { categories } = useCategories();
   const [loading, setLoading] = useState(false);
-  const [createdId, setCreatedId] = useState(null);
 
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
-      const res = await newsService.create(data);
-      const newId = res.data.data?.id;
+      await newsService.create(data);
       toast.success(t('news.createSuccess'));
-      navigate(`/news/${newId}/edit`);
+      navigate('/news');
     } catch (err) {
       toast.error(extractError(err));
     } finally {
@@ -45,7 +43,7 @@ const NewsCreate = () => {
           categories={categories}
           onSubmit={handleSubmit}
           loading={loading}
-          newsId={createdId}
+          newsId={null}
         />
       </div>
     </div>

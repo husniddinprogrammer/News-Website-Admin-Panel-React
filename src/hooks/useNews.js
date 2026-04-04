@@ -12,7 +12,8 @@ const useNews = (queryParams) => {
     setLoading(true);
     try {
       const res = await newsService.getAll(queryParams);
-      setData(res.data.data || []);
+      const items = res.data.data || [];
+      setData(items);
       setPagination(res.data.pagination || null);
     } catch (err) {
       toast.error(extractError(err));

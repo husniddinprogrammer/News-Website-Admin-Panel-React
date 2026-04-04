@@ -171,10 +171,21 @@ const NewsForm = ({ defaultValues, categories, onSubmit: onSubmitProp, loading, 
             <label className="label">{t('news.rank')} (0–10)</label>
             <input
               type="number"
+              className={`input-field ${errors.rank ? 'error' : ''}`}
+              {...register('rank', {
+                valueAsNumber: true,
+                min: 0,
+                max: 10,
+                onChange: (e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!isNaN(v)) {
+                    if (v < 0) e.target.value = 0;
+                    if (v > 10) e.target.value = 10;
+                  }
+                },
+              })}
               min={0}
               max={10}
-              className={`input-field ${errors.rank ? 'error' : ''}`}
-              {...register('rank')}
             />
             {errors.rank && (
               <p className="mt-1 text-xs text-red-500">{t('validation.required')}</p>

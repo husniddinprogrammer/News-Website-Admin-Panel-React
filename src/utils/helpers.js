@@ -1,8 +1,16 @@
+// API URL dan media base avtomatik chiqariladi
+// REACT_APP_API_URL = "http://localhost:3000/api/v1"  →  base = "http://localhost:3000"
+const MEDIA_BASE = (() => {
+  if (process.env.REACT_APP_MEDIA_URL) return process.env.REACT_APP_MEDIA_URL;
+  const api = process.env.REACT_APP_API_URL || 'http://localhost:3000/api/v1';
+  return api.replace(/\/api\/v\d+\/?$/, '').replace(/\/$/, '');
+})();
+
 export const getImageUrl = (url) => {
   if (!url) return null;
-  if (url.startsWith('http')) return url;
-  const base = process.env.REACT_APP_MEDIA_URL || 'http://localhost:3000';
-  return `${base}${url}`;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const path = url.startsWith('/') ? url : `/${url}`;
+  return `${MEDIA_BASE}${path}`;
 };
 
 export const truncate = (str, max = 80) => {

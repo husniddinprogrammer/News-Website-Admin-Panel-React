@@ -39,6 +39,7 @@ const NewsEdit = () => {
     try {
       await newsService.update(id, data);
       toast.success(t('news.updateSuccess'));
+      navigate('/news');
     } catch (err) {
       toast.error(extractError(err));
     } finally {

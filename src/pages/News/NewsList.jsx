@@ -1,7 +1,6 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, ImageOff } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Table from '../../components/ui/Table';
 import Badge from '../../components/ui/Badge';
@@ -13,8 +12,39 @@ import useCategories from '../../hooks/useCategories';
 import useHashtags from '../../hooks/useHashtags';
 import useUiStore from '../../store/uiStore';
 import { formatDate } from '../../utils/dateFormatter';
-import { truncate } from '../../utils/helpers';
 import { getImageUrl } from '../../utils/helpers';
+
+const Placeholder = () => (
+  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
+    <ImageOff className="w-4 h-4 text-gray-400" />
+  </div>
+);
+
+const NewsThumb = ({ url }) => {
+  const src = getImageUrl(url);
+  if (!src) return <Placeholder />;
+
+  return (
+    <div className="relative w-10 h-10 shrink-0">
+      <img
+        key={src}
+        src={src}
+        alt=""
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.nextSibling.style.display = 'flex';
+        }}
+        className="w-10 h-10 rounded-lg object-cover"
+      />
+      <div
+        style={{ display: 'none' }}
+        className="absolute inset-0 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 items-center justify-center"
+      >
+        <ImageOff className="w-4 h-4 text-gray-400" />
+      </div>
+    </div>
+  );
+};
 
 const NewsList = () => {
   const { t } = useTranslation();
@@ -42,17 +72,8 @@ const NewsList = () => {
       header: t('news.newsTitle'),
       render: (val, row) => (
         <div className="flex items-center gap-3">
-          {row.images?.[0] ? (
-            <img
-              src={getImageUrl(row.images[0].url)}
-              alt=""
-              className="w-10 h-10 rounded-lg object-cover shrink-0 bg-gray-100 dark:bg-gray-800"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
-              <Eye className="w-4 h-4 text-gray-400" />
-            </div>
-          )}
+          <NewsThumb url={row.images?.[0]?.url} />
+
           <div className="min-w-0">
             <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate max-w-[260px]">
               {val}
@@ -78,7 +99,7 @@ const NewsList = () => {
     {
       key: 'status',
       header: t('news.status'),
-      width: 110,
+      width: 140,
       render: (val) => (
         <Badge
           variant={
