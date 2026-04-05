@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, ThumbsUp, MessageSquare, Award, Calendar, X } from 'lucide-react';
 import newsService from '../services/newsService';
@@ -27,7 +27,8 @@ const Analytics = () => {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  const buildParams = () => {
+  // Memoized so useEffect has a stable, correct dependency
+  const fetchParams = useMemo(() => {
     const base = { limit: 10, status: 'PUBLISHED' };
     if (timeFilter === 'custom') {
       if (dateFrom) base.dateFrom = dateFrom;
@@ -36,60 +37,61 @@ const Analytics = () => {
       base.time = timeFilter;
     }
     return base;
-  };
+  }, [timeFilter, dateFrom, dateTo]);
 
   useEffect(() => {
-    // For custom range, wait until at least one date is filled
+    // For custom range, wait until at least one date is provided
     if (timeFilter === 'custom' && !dateFrom && !dateTo) return;
 
-    const fetch = async () => {
+    let cancelled = false;
+    const fetchAll = async () => {
       setLoading(true);
       try {
-        const params = buildParams();
         const [viewedRes, likedRes, commentedRes, rankedRes] = await Promise.all([
-          newsService.getAll({ ...params, sort: 'most_viewed' }),
-          newsService.getAll({ ...params, sort: 'most_liked' }),
-          newsService.getAll({ ...params, sort: 'most_commented' }),
-          newsService.getAll({ ...params, sort: 'rank_desc' }),
+          newsService.getAll({ ...fetchParams, sort: 'most_viewed' }),
+          newsService.getAll({ ...fetchParams, sort: 'most_liked' }),
+          newsService.getAll({ ...fetchParams, sort: 'most_commented' }),
+          newsService.getAll({ ...fetchParams, sort: 'rank_desc' }),
         ]);
+        if (cancelled) return;
 
-        const viewed = viewedRes.data.data || [];
-        const liked = likedRes.data.data || [];
+        const viewed    = viewedRes.data.data    || [];
+        const liked     = likedRes.data.data     || [];
         const commented = commentedRes.data.data || [];
-        const ranked = rankedRes.data.data || [];
+        const ranked    = rankedRes.data.data    || [];
 
         setTopViewed(viewed);
         setTopLiked(liked);
         setTopCommented(commented);
         setTopRanked(ranked);
-
-        const totalViews = viewed.reduce((s, n) => s + (n.viewCount || 0), 0);
-        const totalLikes = liked.reduce((s, n) => s + (n.likeCount || 0), 0);
-        const totalComments = commented.reduce((s, n) => s + (n.commentCount || 0), 0);
-        setStats({ views: totalViews, likes: totalLikes, comments: totalComments });
+        setStats({
+          views:    viewed.reduce((s, n) => s + (n.viewCount    || 0), 0),
+          likes:    liked.reduce((s, n)  => s + (n.likeCount    || 0), 0),
+          comments: commented.reduce((s, n) => s + (n.commentCount || 0), 0),
+        });
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-    fetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeFilter, dateFrom, dateTo]);
+    fetchAll();
+    return () => { cancelled = true; };
+  }, [fetchParams, timeFilter, dateFrom, dateTo]);
 
-  const handleTimeFilter = (val) => {
+  const handleTimeFilter = useCallback((val) => {
     setTimeFilter(val);
     if (val !== 'custom') {
       setDateFrom('');
       setDateTo('');
     }
-  };
+  }, []);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setTimeFilter('');
     setDateFrom('');
     setDateTo('');
-  };
+  }, []);
 
   const TopList = ({ items, valueKey, icon: Icon, label }) => (
     <div className="card overflow-hidden">

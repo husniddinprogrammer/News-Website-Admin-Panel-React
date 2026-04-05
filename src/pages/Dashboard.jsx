@@ -15,8 +15,7 @@ import StatCard from '../components/ui/StatCard';
 import Badge from '../components/ui/Badge';
 import { TableSkeleton } from '../components/ui/Skeleton';
 import { formatDate, formatRelative } from '../utils/dateFormatter';
-import { STATUS_COLORS, truncate } from '../utils/helpers';
-import { useTranslation as useT } from 'react-i18next';
+import { truncate } from '../utils/helpers';
 
 const Dashboard = () => {
   const { t } = useTranslation();

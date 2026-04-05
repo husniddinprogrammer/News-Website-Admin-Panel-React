@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getAccessToken, setAccessToken } from '../store/authStore';
+import useAuthStore from '../store/authStore';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api/v1';
 
@@ -12,25 +13,21 @@ const WRITE_METHODS = ['post', 'put', 'patch', 'delete', 'options'];
 
 // Attach access token + block write requests for VIEWER role
 api.interceptors.request.use(
-  async (config) => {
+  (config) => {
     const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Block non-GET requests for VIEWER role
     if (WRITE_METHODS.includes(config.method?.toLowerCase())) {
-      try {
-        const { default: useAuthStore } = await import('../store/authStore');
-        const role = useAuthStore.getState().user?.role;
-        if (role === 'VIEWER') {
-          return Promise.reject(
-            Object.assign(new Error('Ruxsat yo\'q: VIEWER faqat ma\'lumot ko\'ra oladi'), {
-              isViewerBlocked: true,
-            })
-          );
-        }
-      } catch (_) {}
+      const role = useAuthStore.getState().user?.role;
+      if (role === 'VIEWER') {
+        return Promise.reject(
+          Object.assign(new Error("Ruxsat yo'q: VIEWER faqat ma'lumot ko'ra oladi"), {
+            isViewerBlocked: true,
+          })
+        );
+      }
     }
 
     return config;

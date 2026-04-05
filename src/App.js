@@ -1,47 +1,56 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
 
 import ProtectedRoute from './routes/ProtectedRoute';
 import Layout from './components/layout/Layout';
 
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Analytics from './pages/Analytics';
-import NewsList from './pages/News/NewsList';
-import NewsCreate from './pages/News/NewsCreate';
-import NewsEdit from './pages/News/NewsEdit';
-import Categories from './pages/Categories';
-import Hashtags from './pages/Hashtags';
-import Comments from './pages/Comments';
-import Users from './pages/Users';
+const Login      = lazy(() => import('./pages/Login'));
+const Dashboard  = lazy(() => import('./pages/Dashboard'));
+const Analytics  = lazy(() => import('./pages/Analytics'));
+const NewsList   = lazy(() => import('./pages/News/NewsList'));
+const NewsCreate = lazy(() => import('./pages/News/NewsCreate'));
+const NewsEdit   = lazy(() => import('./pages/News/NewsEdit'));
+const Categories = lazy(() => import('./pages/Categories'));
+const Hashtags   = lazy(() => import('./pages/Hashtags'));
+const Comments   = lazy(() => import('./pages/Comments'));
+const Users      = lazy(() => import('./pages/Users'));
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-64">
+    <Loader2 className="w-7 h-7 animate-spin text-primary-600" />
+  </div>
+);
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Public */}
-        <Route path="/login" element={<Login />} />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Public */}
+          <Route path="/login" element={<Login />} />
 
-        {/* Protected */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/news" element={<NewsList />} />
-            <Route path="/news/create" element={<NewsCreate />} />
-            <Route path="/news/:id/edit" element={<NewsEdit />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/hashtags" element={<Hashtags />} />
-            <Route path="/comments" element={<Comments />} />
-            <Route path="/users" element={<Users />} />
+          {/* Protected */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard"       element={<Dashboard />} />
+              <Route path="/analytics"       element={<Analytics />} />
+              <Route path="/news"            element={<NewsList />} />
+              <Route path="/news/create"     element={<NewsCreate />} />
+              <Route path="/news/:id/edit"   element={<NewsEdit />} />
+              <Route path="/categories"      element={<Categories />} />
+              <Route path="/hashtags"        element={<Hashtags />} />
+              <Route path="/comments"        element={<Comments />} />
+              <Route path="/users"           element={<Users />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Suspense>
 
       <Toaster
         position="top-right"

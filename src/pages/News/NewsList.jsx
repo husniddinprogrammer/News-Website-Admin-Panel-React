@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { memo } from 'react';
 import { Plus, Pencil, Trash2, ImageOff } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Table from '../../components/ui/Table';
@@ -21,7 +22,7 @@ const Placeholder = () => (
   </div>
 );
 
-const NewsThumb = ({ url }) => {
+const NewsThumb = memo(({ url }) => {
   const src = getImageUrl(url);
   if (!src) return <Placeholder />;
 
@@ -45,7 +46,7 @@ const NewsThumb = ({ url }) => {
       </div>
     </div>
   );
-};
+});
 
 const NewsList = () => {
   const { t } = useTranslation();

@@ -9,7 +9,6 @@ const DEFAULT_FILTERS = {
   hashtag: '',
   status: '',
   time: '',
-  rank: '',
 };
 
 const useNewsFilters = (initialFilters = {}) => {
@@ -44,26 +43,21 @@ const useNewsFilters = (initialFilters = {}) => {
   }, []);
 
   // Build query params for API (use debounced search)
-  const queryParams = {
-    page: filters.page,
-    limit: filters.limit,
-    sort: filters.sort || undefined,
-    search: debouncedSearch || undefined,
-    category: filters.category || undefined,
-    hashtag: filters.hashtag || undefined,
-    status: filters.status || undefined,
-    time: filters.time || undefined,
-    rank: filters.rank !== '' ? filters.rank : undefined,
-  };
-
-  // Remove undefined keys
-  Object.keys(queryParams).forEach(
-    (k) => queryParams[k] === undefined && delete queryParams[k]
+  const queryParams = Object.fromEntries(
+    Object.entries({
+      page: filters.page,
+      limit: filters.limit,
+      sort: filters.sort || undefined,
+      search: debouncedSearch || undefined,
+      category: filters.category || undefined,
+      hashtag: filters.hashtag || undefined,
+      status: filters.status || undefined,
+      time: filters.time || undefined,
+    }).filter(([, v]) => v !== undefined)
   );
 
   const hasActiveFilters =
-    filters.search || filters.category || filters.hashtag ||
-    filters.status || filters.time || filters.rank !== '';
+    !!(filters.search || filters.category || filters.hashtag || filters.status || filters.time);
 
   return {
     filters,
