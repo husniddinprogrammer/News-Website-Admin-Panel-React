@@ -30,7 +30,10 @@
     "active": "Фаол",
     "inactive": "Нофаол",
     "required": "Мажбурий",
-    "optional": "Ихтиёрий"
+    "optional": "Ихтиёрий",
+    "custom": "Сана оралиғи",
+    "from": "Дан",
+    "to": "Гача"
   },
   "auth": {
     "login": "Кириш",

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import i18n from '../../i18n';
 import {
   Menu,
@@ -149,10 +150,14 @@ const Navbar = () => {
                 </p>
                 <p className="text-xs text-gray-400 truncate">{user?.email}</p>
               </div>
-              <button className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <Link
+                to="/users"
+                onClick={() => setProfileOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
                 <User className="w-4 h-4" />
                 {t('users.title')}
-              </button>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

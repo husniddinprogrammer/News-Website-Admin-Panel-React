@@ -30,7 +30,10 @@
     "active": "Faol",
     "inactive": "Nofaol",
     "required": "Majburiy",
-    "optional": "Ixtiyoriy"
+    "optional": "Ixtiyoriy",
+    "custom": "Sana oralig'i",
+    "from": "Dan",
+    "to": "Gacha"
   },
   "auth": {
     "login": "Kirish",

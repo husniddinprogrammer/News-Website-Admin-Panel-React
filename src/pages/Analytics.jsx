@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, ThumbsUp, MessageSquare, TrendingUp, BarChart2, Award } from 'lucide-react';
+import { Eye, ThumbsUp, MessageSquare, Award, Calendar, X } from 'lucide-react';
 import newsService from '../services/newsService';
-import categoryService from '../services/categoryService';
 import StatCard from '../components/ui/StatCard';
 import { TableSkeleton } from '../components/ui/Skeleton';
-import Badge from '../components/ui/Badge';
 import { truncate } from '../utils/helpers';
+
+const TIME_FILTERS = [
+  { value: '', label: 'common.all' },
+  { value: 'today', label: 'news.today' },
+  { value: 'this_week', label: 'news.thisWeek' },
+  { value: 'this_month', label: 'news.thisMonth' },
+  { value: 'custom', label: 'common.custom' },
+];
 
 const Analytics = () => {
   const { t } = useTranslation();
@@ -17,15 +23,34 @@ const Analytics = () => {
   const [topRanked, setTopRanked] = useState([]);
   const [stats, setStats] = useState({ views: 0, likes: 0, comments: 0 });
 
+  const [timeFilter, setTimeFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  const buildParams = () => {
+    const base = { limit: 10, status: 'PUBLISHED' };
+    if (timeFilter === 'custom') {
+      if (dateFrom) base.dateFrom = dateFrom;
+      if (dateTo) base.dateTo = dateTo;
+    } else if (timeFilter) {
+      base.time = timeFilter;
+    }
+    return base;
+  };
+
   useEffect(() => {
+    // For custom range, wait until at least one date is filled
+    if (timeFilter === 'custom' && !dateFrom && !dateTo) return;
+
     const fetch = async () => {
       setLoading(true);
       try {
+        const params = buildParams();
         const [viewedRes, likedRes, commentedRes, rankedRes] = await Promise.all([
-          newsService.getAll({ sort: 'most_viewed', limit: 10, status: 'PUBLISHED' }),
-          newsService.getAll({ sort: 'most_liked', limit: 10, status: 'PUBLISHED' }),
-          newsService.getAll({ sort: 'most_commented', limit: 10, status: 'PUBLISHED' }),
-          newsService.getAll({ sort: 'rank_desc', limit: 10, status: 'PUBLISHED' }),
+          newsService.getAll({ ...params, sort: 'most_viewed' }),
+          newsService.getAll({ ...params, sort: 'most_liked' }),
+          newsService.getAll({ ...params, sort: 'most_commented' }),
+          newsService.getAll({ ...params, sort: 'rank_desc' }),
         ]);
 
         const viewed = viewedRes.data.data || [];
@@ -49,7 +74,22 @@ const Analytics = () => {
       }
     };
     fetch();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeFilter, dateFrom, dateTo]);
+
+  const handleTimeFilter = (val) => {
+    setTimeFilter(val);
+    if (val !== 'custom') {
+      setDateFrom('');
+      setDateTo('');
+    }
+  };
+
+  const handleReset = () => {
+    setTimeFilter('');
+    setDateFrom('');
+    setDateTo('');
+  };
 
   const TopList = ({ items, valueKey, icon: Icon, label }) => (
     <div className="card overflow-hidden">
@@ -92,10 +132,65 @@ const Analytics = () => {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
           {t('analytics.title')}
         </h1>
+      </div>
+
+      {/* Time filter */}
+      <div className="card p-4 space-y-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+          {TIME_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => handleTimeFilter(f.value)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                timeFilter === f.value
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              {t(f.label)}
+            </button>
+          ))}
+          {(timeFilter || dateFrom || dateTo) && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <X className="w-3 h-3" />
+              {t('common.reset')}
+            </button>
+          )}
+        </div>
+
+        {/* Date range inputs */}
+        {timeFilter === 'custom' && (
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-500 shrink-0">{t('common.from') || 'Dan'}:</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="input-field py-1.5 text-sm w-auto"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-500 shrink-0">{t('common.to') || 'Gacha'}:</label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="input-field py-1.5 text-sm w-auto"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Summary stats */}
@@ -107,30 +202,10 @@ const Analytics = () => {
 
       {/* Top lists grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TopList
-          items={topViewed}
-          valueKey="viewCount"
-          icon={Eye}
-          label={t('news.mostViewed')}
-        />
-        <TopList
-          items={topLiked}
-          valueKey="likeCount"
-          icon={ThumbsUp}
-          label={t('news.mostLiked')}
-        />
-        <TopList
-          items={topCommented}
-          valueKey="commentCount"
-          icon={MessageSquare}
-          label={t('news.mostCommented')}
-        />
-        <TopList
-          items={topRanked}
-          valueKey="rank"
-          icon={Award}
-          label={t('news.rankDesc')}
-        />
+        <TopList items={topViewed} valueKey="viewCount" icon={Eye} label={t('news.mostViewed')} />
+        <TopList items={topLiked} valueKey="likeCount" icon={ThumbsUp} label={t('news.mostLiked')} />
+        <TopList items={topCommented} valueKey="commentCount" icon={MessageSquare} label={t('news.mostCommented')} />
+        <TopList items={topRanked} valueKey="rank" icon={Award} label={t('news.rankDesc')} />
       </div>
     </div>
   );

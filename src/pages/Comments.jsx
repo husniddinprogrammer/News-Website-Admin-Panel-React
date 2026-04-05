@@ -36,13 +36,14 @@ const Comments = () => {
     fetchNews();
   }, []);
 
-  // Load comments when news selected
+  // Load comments — all (id_desc) or by selected news
   useEffect(() => {
-    if (!selectedNewsId) return;
     const fetchComments = async () => {
       setLoading(true);
       try {
-        const res = await commentService.getByNews(selectedNewsId, { page, limit: 20 });
+        const res = selectedNewsId
+          ? await commentService.getByNews(selectedNewsId, { page, limit: 20 })
+          : await commentService.getAll({ page, limit: 20, sort: 'id_desc' });
         setComments(res.data.data || []);
         setPagination(res.data.pagination || null);
       } catch (err) {
@@ -139,33 +140,26 @@ const Comments = () => {
       </div>
 
       {/* Comments table */}
-      {selectedNewsId ? (
-        <div className="card overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-3.5 border-b border-gray-100 dark:border-gray-800">
-            <MessageSquare className="w-4 h-4 text-primary-500" />
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-              {pagination?.total ?? 0} {t('comments.title').toLowerCase()}
-            </span>
+      <div className="card overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-gray-100 dark:border-gray-800">
+          <MessageSquare className="w-4 h-4 text-primary-500" />
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+            {pagination?.total ?? 0} {t('comments.title').toLowerCase()}
+          </span>
+        </div>
+        <Table columns={columns} data={comments} loading={loading} />
+        {pagination && pagination.totalPages > 1 && (
+          <div className="border-t border-gray-100 dark:border-gray-800">
+            <Pagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              total={pagination.total}
+              limit={20}
+              onPageChange={setPage}
+            />
           </div>
-          <Table columns={columns} data={comments} loading={loading} />
-          {pagination && pagination.totalPages > 1 && (
-            <div className="border-t border-gray-100 dark:border-gray-800">
-              <Pagination
-                page={pagination.page}
-                totalPages={pagination.totalPages}
-                total={pagination.total}
-                limit={20}
-                onPageChange={setPage}
-              />
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="card p-12 flex flex-col items-center justify-center text-gray-400">
-          <MessageSquare className="w-12 h-12 mb-3 opacity-30" />
-          <p className="text-sm">{t('comments.selectNews')}</p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
