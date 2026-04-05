@@ -8,13 +8,31 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach access token to every request
+const WRITE_METHODS = ['post', 'put', 'patch', 'delete', 'options'];
+
+// Attach access token + block write requests for VIEWER role
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Block non-GET requests for VIEWER role
+    if (WRITE_METHODS.includes(config.method?.toLowerCase())) {
+      try {
+        const { default: useAuthStore } = await import('../store/authStore');
+        const role = useAuthStore.getState().user?.role;
+        if (role === 'VIEWER') {
+          return Promise.reject(
+            Object.assign(new Error('Ruxsat yo\'q: VIEWER faqat ma\'lumot ko\'ra oladi'), {
+              isViewerBlocked: true,
+            })
+          );
+        }
+      } catch (_) {}
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

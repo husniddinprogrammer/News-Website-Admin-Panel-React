@@ -11,6 +11,7 @@ import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import useCategories from '../hooks/useCategories';
+import usePermission from '../hooks/usePermission';
 import useUiStore from '../store/uiStore';
 import categoryService from '../services/categoryService';
 import { extractError } from '../utils/helpers';
@@ -24,6 +25,7 @@ const Categories = () => {
   const { t } = useTranslation();
   const { categories, loading, refetch } = useCategories();
   const { openConfirm } = useUiStore();
+  const { canWrite } = usePermission();
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -109,7 +111,7 @@ const Categories = () => {
         </Badge>
       ),
     },
-    {
+    ...(canWrite ? [{
       key: 'actions',
       header: t('common.actions'),
       width: 90,
@@ -129,7 +131,7 @@ const Categories = () => {
           </button>
         </div>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -139,9 +141,11 @@ const Categories = () => {
           {t('categories.title')}
           <span className="ml-2 text-sm font-normal text-gray-400">({categories.length})</span>
         </h1>
-        <Button icon={Plus} onClick={openCreate}>
-          {t('categories.createCategory')}
-        </Button>
+        {canWrite && (
+          <Button icon={Plus} onClick={openCreate}>
+            {t('categories.createCategory')}
+          </Button>
+        )}
       </div>
 
       <div className="card overflow-hidden">

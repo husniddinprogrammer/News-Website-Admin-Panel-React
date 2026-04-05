@@ -6,6 +6,7 @@ import Table from '../components/ui/Table';
 import Pagination from '../components/ui/Pagination';
 import Button from '../components/ui/Button';
 import useUiStore from '../store/uiStore';
+import usePermission from '../hooks/usePermission';
 import commentService from '../services/commentService';
 import newsService from '../services/newsService';
 import { extractError, truncate } from '../utils/helpers';
@@ -15,6 +16,7 @@ import { TableSkeleton } from '../components/ui/Skeleton';
 const Comments = () => {
   const { t } = useTranslation();
   const { openConfirm } = useUiStore();
+  const { canWrite } = usePermission();
   const [selectedNewsId, setSelectedNewsId] = useState('');
   const [newsList, setNewsList] = useState([]);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -95,7 +97,7 @@ const Comments = () => {
         <span className="text-xs text-gray-400">{formatDate(val)}</span>
       ),
     },
-    {
+    ...(canWrite ? [{
       key: 'actions',
       header: t('common.actions'),
       width: 70,
@@ -107,7 +109,7 @@ const Comments = () => {
           <Trash2 className="w-4 h-4" />
         </button>
       ),
-    },
+    }] : []),
   ];
 
   return (

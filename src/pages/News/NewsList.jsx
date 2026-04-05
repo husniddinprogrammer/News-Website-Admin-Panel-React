@@ -11,6 +11,7 @@ import useNewsFilters from '../../hooks/useNewsFilters';
 import useCategories from '../../hooks/useCategories';
 import useHashtags from '../../hooks/useHashtags';
 import useUiStore from '../../store/uiStore';
+import usePermission from '../../hooks/usePermission';
 import { formatDate } from '../../utils/dateFormatter';
 import { getImageUrl } from '../../utils/helpers';
 
@@ -49,6 +50,7 @@ const NewsThumb = ({ url }) => {
 const NewsList = () => {
   const { t } = useTranslation();
   const { openConfirm } = useUiStore();
+  const { canWrite } = usePermission();
   const { categories } = useCategories();
   const { hashtags } = useHashtags({ limit: 100 });
 
@@ -134,7 +136,7 @@ const NewsList = () => {
         <span className="text-xs text-gray-400">{formatDate(val)}</span>
       ),
     },
-    {
+    ...(canWrite ? [{
       key: 'actions',
       header: t('common.actions'),
       width: 90,
@@ -156,7 +158,7 @@ const NewsList = () => {
           </button>
         </div>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -171,9 +173,11 @@ const NewsList = () => {
             </span>
           )}
         </h1>
-        <Link to="/news/create">
-          <Button icon={Plus}>{t('news.createNews')}</Button>
-        </Link>
+        {canWrite && (
+          <Link to="/news/create">
+            <Button icon={Plus}>{t('news.createNews')}</Button>
+          </Link>
+        )}
       </div>
 
       {/* Filters */}

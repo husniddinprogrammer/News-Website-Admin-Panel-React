@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import Table from '../components/ui/Table';
 import Badge from '../components/ui/Badge';
 import useUiStore from '../store/uiStore';
+import usePermission from '../hooks/usePermission';
 import userService from '../services/userService';
 import { extractError } from '../utils/helpers';
 import { formatDate } from '../utils/dateFormatter';
@@ -59,6 +60,7 @@ const BlockButton = ({ userId, isBlocked, onChanged }) => {
 
 const Users = () => {
   const { t } = useTranslation();
+  const { canWrite } = usePermission();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -124,20 +126,25 @@ const Users = () => {
       header: t('users.role'),
       width: 100,
       render: (val) => (
-        <Badge variant={val === 'BOSS' ? 'purple' : 'info'}>{val}</Badge>
+        <Badge variant={val === 'BOSS' ? 'purple' : val === 'VIEWER' ? 'default' : 'info'}>{val}</Badge>
       ),
     },
     {
       key: 'isBlocked',
       header: t('common.status'),
       width: 140,
-      render: (val, row) => (
-        <BlockButton
-          userId={row.id}
-          isBlocked={val}
-          onChanged={patchUser}
-        />
-      ),
+      render: (val, row) =>
+        canWrite ? (
+          <BlockButton userId={row.id} isBlocked={val} onChanged={patchUser} />
+        ) : (
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+            val
+              ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
+              : 'bg-green-50 border-green-200 text-green-600 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400'
+          }`}>
+            {val ? t('users.blocked') : t('users.active')}
+          </span>
+        ),
     },
     {
       key: 'createdAt',

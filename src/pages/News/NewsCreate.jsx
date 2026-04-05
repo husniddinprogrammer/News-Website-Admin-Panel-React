@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, ImagePlus } from 'lucide-react';
@@ -8,11 +8,17 @@ import ImageUploader from '../../components/news/ImageUploader';
 import Button from '../../components/ui/Button';
 import newsService from '../../services/newsService';
 import useCategories from '../../hooks/useCategories';
+import usePermission from '../../hooks/usePermission';
 import { extractError } from '../../utils/helpers';
 
 const NewsCreate = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { canWrite } = usePermission();
+
+  useEffect(() => {
+    if (!canWrite) navigate('/news', { replace: true });
+  }, [canWrite, navigate]);
   const { categories } = useCategories();
   const [loading, setLoading] = useState(false);
   const [createdId, setCreatedId] = useState(null); // null = form qadam, string = rasm qadam

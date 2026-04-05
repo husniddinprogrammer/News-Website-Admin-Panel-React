@@ -11,6 +11,7 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Pagination from '../components/ui/Pagination';
 import useHashtags from '../hooks/useHashtags';
+import usePermission from '../hooks/usePermission';
 import useUiStore from '../store/uiStore';
 import hashtagService from '../services/hashtagService';
 import { extractError } from '../utils/helpers';
@@ -22,6 +23,7 @@ const schema = z.object({
 const Hashtags = () => {
   const { t } = useTranslation();
   const { openConfirm } = useUiStore();
+  const { canWrite } = usePermission();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
@@ -95,7 +97,7 @@ const Hashtags = () => {
         </code>
       ),
     },
-    {
+    ...(canWrite ? [{
       key: 'actions',
       header: t('common.actions'),
       width: 80,
@@ -107,7 +109,7 @@ const Hashtags = () => {
           <Trash2 className="w-4 h-4" />
         </button>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -121,9 +123,11 @@ const Hashtags = () => {
             </span>
           )}
         </h1>
-        <Button icon={Plus} onClick={openCreate}>
-          {t('hashtags.createHashtag')}
-        </Button>
+        {canWrite && (
+          <Button icon={Plus} onClick={openCreate}>
+            {t('hashtags.createHashtag')}
+          </Button>
+        )}
       </div>
 
       {/* Search */}

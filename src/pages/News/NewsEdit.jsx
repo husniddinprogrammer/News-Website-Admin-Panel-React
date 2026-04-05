@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import NewsForm from '../../components/news/NewsForm';
 import newsService from '../../services/newsService';
 import useCategories from '../../hooks/useCategories';
+import usePermission from '../../hooks/usePermission';
 import { extractError } from '../../utils/helpers';
 import { FormSkeleton } from '../../components/ui/Skeleton';
 
@@ -13,10 +14,15 @@ const NewsEdit = () => {
   const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { canWrite } = usePermission();
   const { categories } = useCategories();
   const [newsItem, setNewsItem] = useState(null);
   const [fetching, setFetching] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!canWrite) navigate('/news', { replace: true });
+  }, [canWrite, navigate]);
 
   useEffect(() => {
     const fetchNews = async () => {
