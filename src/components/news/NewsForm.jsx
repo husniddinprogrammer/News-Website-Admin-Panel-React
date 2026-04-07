@@ -38,7 +38,7 @@ const NewsForm = ({ defaultValues, categories, onSubmit: onSubmitProp, loading, 
       title: defaultValues?.title || '',
       shortDescription: defaultValues?.shortDescription || '',
       content: defaultValues?.content || '',
-      categoryId: defaultValues?.category?.id || defaultValues?.categoryId || '',
+      categoryId: String(defaultValues?.category?.id || defaultValues?.categoryId || ''),
       status: defaultValues?.status || 'DRAFT',
       rank: defaultValues?.rank ?? 0,
     },
@@ -48,7 +48,7 @@ const NewsForm = ({ defaultValues, categories, onSubmit: onSubmitProp, loading, 
     onSubmitProp({ ...data, hashtags });
   };
 
-  const categoryOptions = categories.map((c) => ({ value: c.id, label: c.name }));
+  const categoryOptions = categories.map((c) => ({ value: String(c.id), label: c.name }));
 
   const statusOptions = [
     { value: 'DRAFT', label: t('news.draft') },

@@ -2,7 +2,7 @@
 // REACT_APP_API_URL = "http://localhost:3000/api/v1"  →  base = "http://localhost:3000"
 const MEDIA_BASE = (() => {
   if (process.env.REACT_APP_MEDIA_URL) return process.env.REACT_APP_MEDIA_URL;
-  const api = process.env.REACT_APP_API_URL || 'http://localhost:3000/api/v1';
+  const api = process.env.REACT_APP_API_URL || 'https://api.news-portal.uz/api/v1';
   return api.replace(/\/api\/v\d+\/?$/, '').replace(/\/$/, '');
 })();
 

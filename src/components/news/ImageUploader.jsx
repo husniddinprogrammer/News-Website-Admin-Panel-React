@@ -24,9 +24,15 @@ const ImageUploader = ({ newsId, initialImages = [] }) => {
 
     try {
       const res = await newsService.uploadImages(newsId, files);
-      const newImgs = res.data.data || [];
+      const uploadedImgs = res.data.data || [];
+      
+      // If API returns all images, only take the last 'files.length' images (newly uploaded ones)
+      const newImgs = uploadedImgs.length > images.length 
+        ? uploadedImgs.slice(-files.length)
+        : uploadedImgs;
+      
       setImages((prev) => [...prev, ...newImgs]);
-      toast.success(`${newImgs.length} ta rasm yuklandi`);
+      toast.success(`${files.length} ta rasm yuklandi`);
     } catch (err) {
       toast.error(extractError(err));
     } finally {
